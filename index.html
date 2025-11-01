@@ -1,115 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DKBat Booking</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DKBat Order</title>
+  <link rel="icon" href="shop-local-logo.png" />
   <style>
     body {
       font-family: Arial, sans-serif;
+      background-color: #ffffff;
+      color: #222;
+      text-align: center;
       margin: 0;
       padding: 0;
-      background-color: #ffffff;
-      color: #333;
     }
-
     header {
-      background: #0056d6;
+      background-color: #1976d2;
       color: white;
-      padding: 15px;
-      text-align: center;
+      padding: 20px;
     }
-
-    nav a {
-      color: white;
-      margin: 0 10px;
-      text-decoration: none;
-      font-weight: bold;
+    header img {
+      height: 60px;
+      vertical-align: middle;
     }
-
-    .container {
-      max-width: 500px;
-      margin: 30px auto;
-      background: #f9f9f9;
+    h1 {
+      margin: 10px 0 0 0;
+      font-size: 24px;
+    }
+    form {
+      background: #f5f5f5;
+      margin: 40px auto;
       padding: 20px;
       border-radius: 12px;
-      box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
-
-    label {
-      display: block;
-      margin: 12px 0 6px;
-    }
-
-    select, input {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 12px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 16px;
-    }
-
-    button {
+    input, select, button {
       width: 100%;
       padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
       font-size: 16px;
-      font-weight: bold;
-      background: #007bff;
+    }
+    button {
+      background-color: #1976d2;
       color: white;
       border: none;
-      border-radius: 6px;
+      font-weight: bold;
       cursor: pointer;
-      transition: 0.3s;
+      transition: background 0.2s ease;
     }
-
     button:hover {
-      background: #0056d6;
+      background-color: #125ea8;
+    }
+    #message {
+      font-size: 16px;
+      color: green;
+      margin-top: 15px;
+    }
+    footer {
+      margin-top: 40px;
+      font-size: 14px;
+      color: #777;
+      padding-bottom: 20px;
     }
   </style>
 </head>
 <body>
+
   <header>
+    <img src="shop-local-logo.png" alt="Shop Local Logo">
     <h1>DKBat Massage Booking</h1>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="about.html">About Us</a>
-    </nav>
   </header>
 
-  <div class="container">
-    <form id="bookingForm">
-      <label for="massage">Choose Massage Type:</label>
-      <select id="massage" name="massage" required>
-        <option value="">-- Select --</option>
-        <option value="Hand Massage">Hand Massage</option>
-        <option value="Full Body Massage">Full Body Massage</option>
-        <option value="Crawling Massage">Crawling Massage</option>
-      </select>
+  <form id="bookingForm">
+    <label>Name:</label>
+    <input type="text" id="name" placeholder="Enter your name" required>
 
-      <label for="date">Pick a Date:</label>
-      <input type="date" id="date" name="date" required>
+    <label>Massage Type:</label>
+    <select id="service" required>
+      <option value="">Select Service</option>
+      <option value="Hand Massage">Hand Massage</option>
+      <option value="Full Body Massage">Full Body Massage</option>
+      <option value="Neck Massage">Neck Massage</option>
+    </select>
 
-      <label for="time">Pick a Time:</label>
-      <input type="time" id="time" name="time" required>
+    <label>Date:</label>
+    <input type="date" id="date" required>
 
-      <button type="submit">Book Now</button>
-    </form>
-  </div>
+    <label>Time:</label>
+    <input type="time" id="time" required>
 
-  <script>
-    document.getElementById("bookingForm").addEventListener("submit", function(event) {
-      event.preventDefault(); // stop page refresh
-      const massage = document.getElementById("massage").value;
+    <button type="submit">Book Now</button>
+    <p id="message"></p>
+  </form>
+
+  <footer>© 2025 DKBat Orders | Shop Local</footer>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDq6rMjZ0CeydCkWmQFLVmw6fes__Dy_RI",
+      authDomain: "dkbat-orders.firebaseapp.com",
+      databaseURL: "https://dkbat-orders-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "dkbat-orders",
+      storageBucket: "dkbat-orders.firebasestorage.app",
+      messagingSenderId: "208034554527",
+      appId: "1:208034554527:web:97ce73e6f8cc786ae878aa",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const form = document.getElementById("bookingForm");
+    const message = document.getElementById("message");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const service = document.getElementById("service").value;
       const date = document.getElementById("date").value;
       const time = document.getElementById("time").value;
 
-      if (massage && date && time) {
-        alert(`✅ Booking Confirmed!\n\nMassage: ${massage}\nDate: ${date}\nTime: ${time}`);
-      } else {
-        alert("⚠️ Please fill all fields before booking.");
+      if (!name || !service || !date || !time) {
+        message.style.color = "red";
+        message.textContent = "⚠️ Please fill all fields.";
+        return;
+      }
+
+      try {
+        await push(ref(db, "bookings"), {
+          name,
+          service,
+          date,
+          time,
+          status: "Pending",
+          createdAt: new Date().toISOString(),
+        });
+
+        message.style.color = "green";
+        message.textContent = "✅ Booking sent successfully!";
+        form.reset();
+      } catch (error) {
+        message.style.color = "red";
+        message.textContent = "❌ Error sending booking. Try again.";
+        console.error(error);
       }
     });
   </script>
+
 </body>
 </html>
