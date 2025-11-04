@@ -1,1 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Booking Invoice | DKBat</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: white;
+      color: #000;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+    .box {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.15);
+      max-width: 400px;
+      margin: 50px auto;
+    }
+    h2 {
+      color: #0066ff;
+    }
+    #status {
+      font-weight: bold;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Booking Invoice</h2>
+    <p><b>Booking ID:</b> <span id="inv-id"></span></p>
+    <p><b>Name:</b> <span id="inv-name"></span></p>
+    <p><b>Service:</b> <span id="inv-service"></span></p>
+    <p><b>Date:</b> <span id="inv-date"></span></p>
+    <p><b>Time:</b> <span id="inv-time"></span></p>
+    <p><b>Status:</b> <span id="status"></span></p>
+  </div>
 
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDq6rMjZ0CeydCkWmQFLVmw6fes__Dy_RI",
+      authDomain: "dkbat-orders.firebaseapp.com",
+      databaseURL: "https://dkbat-orders-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "dkbat-orders",
+      storageBucket: "dkbat-orders.firebasestorage.app",
+      messagingSenderId: "208034554527",
+      appId: "1:208034554527:web:97ce73e6f8cc786ae878aa",
+      measurementId: "G-HHQ00E03VV"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+
+    if (id) {
+      document.getElementById("inv-id").textContent = id;
+      get(ref(db, "bookings/" + id)).then(snapshot => {
+        if (snapshot.exists()) {
+          const b = snapshot.val();
+          document.getElementById("inv-name").textContent = b.name;
+          document.getElementById("inv-service").textContent = b.service;
+          document.getElementById("inv-date").textContent = b.date;
+          document.getElementById("inv-time").textContent = b.time;
+          document.getElementById("status").textContent = b.status;
+          document.getElementById("status").style.color = 
+            b.status === "Completed" ? "green" : "orange";
+        } else {
+          document.body.innerHTML = "<p>Booking not found</p>";
+        }
+      });
+    } else {
+      document.body.innerHTML = "<p>No booking ID provided.</p>";
+    }
+  </script>
+</body>
+</html>
