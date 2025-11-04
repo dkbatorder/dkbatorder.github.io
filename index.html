@@ -1,90 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DKBat Booking</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DKBat Invoice</title>
   <style>
     body {
-      font-family: 'Poppins', sans-serif;
-      background: white;
-      color: #000;
+      font-family: Arial, sans-serif;
+      background-color: white;
+      color: black;
       text-align: center;
-      margin: 0;
       padding: 20px;
     }
     h1 {
-      color: #0066ff;
+      color: #007BFF;
     }
-    form {
-      background: #f9f9f9;
-      padding: 20px;
-      border-radius: 12px;
+    .invoice {
       max-width: 400px;
-      margin: 20px auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    input, select, button {
-      width: 90%;
-      padding: 10px;
-      margin: 8px 0;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 15px;
+      margin: 0 auto;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
     }
     button {
-      background: #0066ff;
+      background-color: #007BFF;
       color: white;
       border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
       cursor: pointer;
+      margin-top: 15px;
     }
     button:hover {
-      background: #0051cc;
+      background-color: #0056b3;
     }
-    #invoice {
-      display: none;
-      background: #ffffff;
-      color: #000;
-      padding: 20px;
-      border-radius: 12px;
-      max-width: 400px;
-      margin: 20px auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    .logo {
-      width: 120px;
-      margin-top: 10px;
+    img {
+      width: 100px;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
-  <img src="logo.png" alt="DKBat Logo" class="logo">
-  <h1>Book Your Massage</h1>
 
-  <form id="booking-form">
-    <input type="text" id="name" placeholder="Your Name" required>
-    <select id="service" required>
-      <option value="">Select Service</option>
-      <option value="Hand Massage">Hand Massage</option>
-      <option value="Full Body Massage">Full Body Massage</option>
-      <option value="Neck Massage">Neck Massage</option>
-    </select>
-    <input type="date" id="date" required>
-    <input type="time" id="time" required>
-    <button type="submit">Book Now</button>
-  </form>
-
-  <div id="invoice">
-    <h2 style="color:#0066ff;">Booking Invoice</h2>
-    <p><b>Booking ID:</b> <span id="inv-id"></span></p>
-    <p><b>Name:</b> <span id="inv-name"></span></p>
-    <p><b>Service:</b> <span id="inv-service"></span></p>
-    <p><b>Date:</b> <span id="inv-date"></span></p>
-    <p><b>Time:</b> <span id="inv-time"></span></p>
-    <p><b>Status:</b> <span id="inv-status" style="color:green;">Pending</span></p>
-    <button id="book-again">Book Again</button>
+  <img src="logo.png" alt="Shop Local Logo">
+  <h1>Invoice</h1>
+  <div class="invoice" id="invoice">
+    <p><strong>Customer Name:</strong> <span id="name">Loading...</span></p>
+    <p><strong>Massage Type:</strong> <span id="type">Loading...</span></p>
+    <p><strong>Date:</strong> <span id="date">Loading...</span></p>
+    <p><strong>Time:</strong> <span id="time">Loading...</span></p>
   </div>
 
-  <script type="module" src="customer.js"></script>
+  <button id="download">Download Invoice</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+    import { getDatabase, ref, onValue, limitToLast, query } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDq6rMjZ0CeydCkWmQFLVmw6fes__Dy_RI",
+      authDomain: "dkbat-orders.firebaseapp.com",
+      databaseURL: "https://dkbat-orders-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "dkbat-orders",
+      storageBucket: "dkbat-orders.firebasestorage.app",
+      messagingSenderId: "208034554527",
+      appId: "1:208034554527:web:97ce73e6f8cc786ae878aa",
+      measurementId: "G-HHQ00E03VV"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const invoiceRef = query(ref(db, "bookings"), limitToLast(1));
+
+    onValue(invoiceRef, (snapshot) => {
+      snapshot.forEach((child) => {
+        const data = child.val();
+        document.getElementById("name").textContent = data.name || "N/A";
+        document.getElementById("type").textContent = data.type || "N/A";
+        document.getElementById("date").textContent = data.date || "N/A";
+        document.getElementById("time").textContent = data.time || "N/A";
+      });
+    });
+
+    // PDF download
+    document.getElementById("download").addEventListener("click", () => {
+      const element = document.getElementById("invoice");
+      const opt = {
+        margin: 0.5,
+        filename: 'DKBat_Invoice.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    });
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </body>
 </html>
