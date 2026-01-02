@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DKBat Invoice</title>
+  <title>DKBat Orders</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -15,48 +15,50 @@
     h1 {
       color: #007BFF;
     }
-    .invoice {
+    form {
+      margin: 20px auto;
       max-width: 400px;
-      margin: 0 auto;
-      border: 1px solid #ccc;
-      border-radius: 12px;
+      background: #f8f9fa;
       padding: 20px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    input, select, button {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
     }
     button {
       background-color: #007BFF;
       color: white;
       border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
       cursor: pointer;
-      margin-top: 15px;
     }
     button:hover {
       background-color: #0056b3;
     }
-    img {
-      width: 100px;
-      margin-bottom: 10px;
-    }
   </style>
 </head>
 <body>
-
-  <img src="logo.png" alt="Shop Local Logo">
-  <h1>Invoice</h1>
-  <div class="invoice" id="invoice">
-    <p><strong>Customer Name:</strong> <span id="name">Loading...</span></p>
-    <p><strong>Massage Type:</strong> <span id="type">Loading...</span></p>
-    <p><strong>Date:</strong> <span id="date">Loading...</span></p>
-    <p><strong>Time:</strong> <span id="time">Loading...</span></p>
-  </div>
-
-  <button id="download">Download Invoice</button>
+  <h1>DKBat Massage Booking</h1>
+  <form id="bookingForm">
+    <input type="text" id="name" placeholder="Your Name" required>
+    <select id="type" required>
+      <option value="">Select Massage Type</option>
+      <option>Hand Massage</option>
+      <option>Full Body Massage</option>
+      <option>Neck Massage</option>
+    </select>
+    <input type="date" id="date" required>
+    <input type="time" id="time" required>
+    <button type="submit">Book Now</button>
+  </form>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-    import { getDatabase, ref, onValue, limitToLast, query } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDq6rMjZ0CeydCkWmQFLVmw6fes__Dy_RI",
@@ -72,32 +74,20 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const invoiceRef = query(ref(db, "bookings"), limitToLast(1));
+    document.getElementById("bookingForm").addEventListener("submit", (e) => {
+      e.preventDefault();
 
-    onValue(invoiceRef, (snapshot) => {
-      snapshot.forEach((child) => {
-        const data = child.val();
-        document.getElementById("name").textContent = data.name || "N/A";
-        document.getElementById("type").textContent = data.type || "N/A";
-        document.getElementById("date").textContent = data.date || "N/A";
-        document.getElementById("time").textContent = data.time || "N/A";
+      const name = document.getElementById("name").value;
+      const type = document.getElementById("type").value;
+      const date = document.getElementById("date").value;
+      const time = document.getElementById("time").value;
+
+      const bookingRef = push(ref(db, "bookings"));
+      set(bookingRef, { name, type, date, time }).then(() => {
+        const bookingId = bookingRef.key;
+        window.location.href = `invoice.html?id=${bookingId}`;
       });
     });
-
-    // PDF download
-    document.getElementById("download").addEventListener("click", () => {
-      const element = document.getElementById("invoice");
-      const opt = {
-        margin: 0.5,
-        filename: 'DKBat_Invoice.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-      };
-      html2pdf().set(opt).from(element).save();
-    });
   </script>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </body>
 </html>
